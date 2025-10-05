@@ -1,0 +1,48 @@
+Band,Frequency_Start_MHz,Frequency_End_MHz,Wavelength,Primary_Use,Service_Type
+160m,1.8,2.0,160 meters,Long distance communication,Amateur Radio
+80m,3.5,4.0,80 meters,Regional/DX communication,Amateur Radio
+40m,7.0,7.3,40 meters,Reliable regional/DX,Amateur Radio
+30m,10.1,10.15,30 meters,Digital modes CW,Amateur Radio
+20m,14.0,14.35,20 meters,Premier DX band,Amateur Radio
+17m,18.068,18.168,17 meters,DX communication,Amateur Radio
+15m,21.0,21.45,15 meters,DX when propagation good,Amateur Radio
+12m,24.89,24.99,12 meters,Regional/DX,Amateur Radio
+10m,28.0,29.7,10 meters,Local/DX repeaters,Amateur Radio
+6m,50,54,6 meters,Sporadic E propagation,Amateur Radio
+2m,144,148,2 meters,Local/repeater communication,Amateur Radio
+1.25m,222,225,1.25 meters,Regional communication,Amateur Radio
+70cm,420,450,70 centimeters,Local/repeater/satellites,Amateur Radio
+33cm,902,928,33 centimeters,Weak signal/digital,Amateur Radio
+23cm,1240,1300,23 centimeters,ATV digital microwave,Amateur Radio
+AM Radio,0.535,1.705,N/A,Commercial broadcasting,Broadcast
+FM Radio,88.1,107.9,N/A,Commercial broadcasting,Broadcast
+TV Ch 2-6,54,88,VHF Low,Television,Broadcast
+TV Ch 7-13,174,216,VHF High,Television,Broadcast
+TV Ch 14-36,470,608,UHF,Television,Broadcast
+Police VHF,150,174,N/A,Law enforcement,Public Safety
+Police UHF,450,470,N/A,Law enforcement,Public Safety
+Fire/EMS VHF,150,174,N/A,Emergency services,Public Safety
+Fire/EMS UHF,450,470,N/A,Emergency services,Public Safety
+Highway Patrol,42,50,N/A,State police,Public Safety
+Aviation,118,137,N/A,Air traffic control,Aviation
+Marine VHF,156,162,N/A,Maritime communication,Marine
+WiFi 2.4GHz,2400,2485,N/A,Wireless networking,ISM
+WiFi 5GHz,5150,5825,N/A,Wireless networking,ISM
+LTE Band 2,1850,1990,N/A,Cellular communication,Cellular
+LTE Band 4,1710,2155,N/A,Cellular communication,Cellular
+LTE Band 5,824,894,N/A,Cellular communication,Cellular
+LTE Band 12,699,746,N/A,Cellular communication,Cellular
+LTE Band 13,746,787,N/A,Cellular communication,Cellular
+L-Band,1000,2000,N/A,GPS mobile satellite,Satellite
+S-Band,2000,4000,N/A,Weather radar WiFi,Satellite
+C-Band,4000,8000,N/A,Satellite communication,Satellite
+X-Band,8000,12000,N/A,Radar satellite,Satellite
+Ku-Band,12000,18000,N/A,Satellite TV internet,Satellite
+K-Band,18000,27000,N/A,Satellite radar,Satellite
+Ka-Band,27000,40000,N/A,High-capacity satellite,Satellite
+WWV,2.5,20,N/A,Time signals,Time Standard
+WWVH,2.5,15,N/A,Time signals,Time Standard
+CHU,3.330,14.670,N/A,Time signals,Time Standard
+GPS L1,1575.42,1575.42,N/A,Navigation,GPS
+GPS L2,1227.60,1227.60,N/A,Navigation,GPS
+GPS L5,1176.45,1176.45,N/A,Navigation,GPS
