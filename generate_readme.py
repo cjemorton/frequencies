@@ -1,4 +1,29 @@
-# Frequency Reference Database
+#!/usr/bin/env python3
+"""
+Generate comprehensive README.md with complete frequency information.
+"""
+
+import csv
+from enhance_frequency_data import get_enhanced_frequency_data
+
+def generate_comprehensive_readme():
+    """Generate a comprehensive README with all frequency data."""
+    
+    data = get_enhanced_frequency_data()
+    
+    # Group data by service type
+    service_groups = {}
+    for entry in data:
+        service = entry['Service_Type']
+        if service not in service_groups:
+            service_groups[service] = []
+        service_groups[service].append(entry)
+    
+    # Sort each group by frequency
+    for service in service_groups:
+        service_groups[service].sort(key=lambda x: x['Frequency_Start_MHz'])
+    
+    readme_content = """# Frequency Reference Database
 
 A comprehensive, verified reference database containing frequency allocations, band plans, and technical specifications for radio frequency applications across all services. This database contains **91 verified frequency allocations** researched from authoritative sources including the FCC, ITU, ARRL, IEEE, and other standards organizations.
 
@@ -22,56 +47,80 @@ This repository contains complete frequency reference data in multiple formats:
 
 ## Complete Frequency Allocations
 
+"""
 
-## Amateur Radio
-
-Amateur radio frequency allocations in the United States as defined by FCC Part 97 and coordinated with the ARRL band plans. These frequencies are allocated for amateur radio operators holding valid FCC licenses.
+    # Add each service type section
+    service_type_order = [
+        'Amateur Radio',
+        'Broadcast', 
+        'Public Safety',
+        'Aviation',
+        'Marine',
+        'Citizens Band',
+        'Personal Radio',
+        'WiFi',
+        'ISM',
+        'Cellular',
+        'GPS',
+        'Satellite',
+        'Time Standard',
+        'Emergency',
+        'Personal Area Network'
+    ]
+    
+    for service_type in service_type_order:
+        if service_type not in service_groups:
+            continue
+            
+        entries = service_groups[service_type]
+        
+        readme_content += f"\n## {service_type}\n\n"
+        
+        if service_type == 'Amateur Radio':
+            readme_content += """Amateur radio frequency allocations in the United States as defined by FCC Part 97 and coordinated with the ARRL band plans. These frequencies are allocated for amateur radio operators holding valid FCC licenses.
 
 ### HF Amateur Bands (High Frequency: 3-30 MHz)
 
 The HF bands provide long-distance communication capabilities through ionospheric propagation. Band conditions vary with solar cycle, time of day, and season.
 
-| Band | Frequency Range | Wavelength | Primary Use |
-|------|----------------|-------------|-------------|
-| 2200m | 0.136 - 0.138 MHz | 2200 meters | LF experimental |
-| 630m | 0.472 - 0.479 MHz | 630 meters | MF experimental |
-| 160m | 1.800 - 2.000 MHz | 160 meters | Long distance communication |
-| 80m | 3.500 - 4.000 MHz | 80 meters | Regional/DX communication |
-| 60m | 5.330 - 5.404 MHz | 60 meters | Regional communication |
-| 40m | 7.000 - 7.300 MHz | 40 meters | Reliable regional/DX |
-| 30m | 10.100 - 10.150 MHz | 30 meters | Digital modes CW |
-| 20m | 14.000 - 14.350 MHz | 20 meters | Premier DX band |
-| 17m | 18.068 - 18.168 MHz | 17 meters | DX communication |
-| 15m | 21.000 - 21.450 MHz | 15 meters | DX when propagation good |
-| 12m | 24.890 - 24.990 MHz | 12 meters | Regional/DX |
-| 10m | 28.000 - 29.700 MHz | 10 meters | Local/DX repeaters |
-
-### VHF/UHF Amateur Bands (Very High Frequency: 30 MHz and above)
-
-VHF and UHF bands provide reliable local and regional communication, with some bands offering weak-signal propagation modes and satellite communication.
-
-| Band | Frequency Range | Wavelength | Primary Use |
-|------|----------------|-------------|-------------|
-| 6m | 50.0 - 54.0 MHz | 6 meters | Sporadic E propagation |
-| 2m | 144.0 - 148.0 MHz | 2 meters | Local/repeater communication |
-| 1.25m | 222.0 - 225.0 MHz | 1.25 meters | Regional communication |
-| 70cm | 420.0 - 450.0 MHz | 70 centimeters | Local/repeater/satellites |
-| 33cm | 902.0 - 928.0 MHz | 33 centimeters | Weak signal/digital |
-| 23cm | 1240.0 - 1300.0 MHz | 23 centimeters | ATV digital microwave |
-| 13cm | 2300.0 - 2450.0 MHz | 13 centimeters | High-speed digital |
-| 9cm | 3300.0 - 3500.0 MHz | 9 centimeters | Microwave experimentation |
-| 5cm | 5650.0 - 5925.0 MHz | 5 centimeters | Microwave |
-
-### Important Amateur Radio Frequencies
-
-| Frequency | Description | Use |
-|-----------|-------------|-----|
-| 146.52 MHz | 2m Simplex | National simplex calling frequency |
-| 446.00 MHz | 70cm Simplex | National simplex calling frequency |
-
-## Broadcast
-
-Commercial broadcasting frequencies allocated by the FCC for AM radio, FM radio, and over-the-air television in the United States.
+"""
+            # Create separate tables for HF and VHF/UHF
+            hf_bands = [e for e in entries if e['Frequency_End_MHz'] <= 30]
+            vhf_uhf_bands = [e for e in entries if e['Frequency_Start_MHz'] > 30 and 'simplex' not in e['Band'].lower()]
+            simplex_freqs = [e for e in entries if 'simplex' in e['Band'].lower()]
+            
+            if hf_bands:
+                readme_content += "| Band | Frequency Range | Wavelength | Primary Use |\n"
+                readme_content += "|------|----------------|-------------|-------------|\n"
+                for entry in hf_bands:
+                    if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                        freq_range = f"{entry['Frequency_Start_MHz']:.3f} MHz"
+                    else:
+                        freq_range = f"{entry['Frequency_Start_MHz']:.3f} - {entry['Frequency_End_MHz']:.3f} MHz"
+                    readme_content += f"| {entry['Band']} | {freq_range} | {entry['Wavelength']} | {entry['Primary_Use']} |\n"
+            
+            readme_content += "\n### VHF/UHF Amateur Bands (Very High Frequency: 30 MHz and above)\n\n"
+            readme_content += "VHF and UHF bands provide reliable local and regional communication, with some bands offering weak-signal propagation modes and satellite communication.\n\n"
+            
+            if vhf_uhf_bands:
+                readme_content += "| Band | Frequency Range | Wavelength | Primary Use |\n"
+                readme_content += "|------|----------------|-------------|-------------|\n"
+                for entry in vhf_uhf_bands:
+                    if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                        freq_range = f"{entry['Frequency_Start_MHz']:.1f} MHz"
+                    else:
+                        freq_range = f"{entry['Frequency_Start_MHz']:.1f} - {entry['Frequency_End_MHz']:.1f} MHz"
+                    readme_content += f"| {entry['Band']} | {freq_range} | {entry['Wavelength']} | {entry['Primary_Use']} |\n"
+            
+            if simplex_freqs:
+                readme_content += "\n### Important Amateur Radio Frequencies\n\n"
+                readme_content += "| Frequency | Description | Use |\n"
+                readme_content += "|-----------|-------------|-----|\n"
+                for entry in simplex_freqs:
+                    readme_content += f"| {entry['Frequency_Start_MHz']:.2f} MHz | {entry['Band']} | {entry['Primary_Use']} |\n"
+        
+        elif service_type == 'Broadcast':
+            readme_content += """Commercial broadcasting frequencies allocated by the FCC for AM radio, FM radio, and over-the-air television in the United States.
 
 ### AM Radio Broadcasting
 AM (Amplitude Modulation) radio operates in the Medium Frequency (MF) band with 10 kHz channel spacing in North America (9 kHz internationally).
@@ -82,31 +131,33 @@ FM (Frequency Modulation) radio operates in the VHF band with 200 kHz channel sp
 ### Television Broadcasting
 Over-the-air television uses ATSC (Advanced Television Systems Committee) digital transmission standard in North America.
 
-| Service | Frequency Range | Band | Modulation/Standard |
-|---------|----------------|------|--------------------|
-| AM Radio | 0.5 - 1.7 MHz | N/A | Commercial AM broadcasting |
-| TV Ch 2-6 | 54.0 - 88.0 MHz | VHF Low | Television VHF-Lo |
-| FM Radio | 88.1 - 107.9 MHz | N/A | Commercial FM broadcasting |
-| TV Ch 7-13 | 174.0 - 216.0 MHz | VHF High | Television VHF-Hi |
-| TV Ch 14-36 | 470.0 - 608.0 MHz | UHF | Television UHF |
-
-## Public Safety
-
-Public safety frequencies used by police, fire, emergency medical services, and other first responders. These frequencies are coordinated through local and regional frequency coordination offices.
+"""
+            readme_content += "| Service | Frequency Range | Band | Modulation/Standard |\n"
+            readme_content += "|---------|----------------|------|--------------------|\n"
+            for entry in entries:
+                if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} MHz"
+                else:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} - {entry['Frequency_End_MHz']:.1f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | {entry['Wavelength']} | {entry['Primary_Use']} |\n"
+        
+        elif service_type == 'Public Safety':
+            readme_content += """Public safety frequencies used by police, fire, emergency medical services, and other first responders. These frequencies are coordinated through local and regional frequency coordination offices.
 
 **Note**: Many public safety agencies have migrated to digital trunked radio systems and P25 digital modes. Frequencies listed represent common allocations but specific assignments vary by region.
 
-| Service | Frequency Range | Primary Users | Notes |
-|---------|----------------|---------------|-------|
-| Public Safety VHF-Lo | 30.6 - 50.0 MHz | Fire/EMS/Police | Regional variations apply |
-| Public Safety VHF | 150.8 - 174.0 MHz | Police/Fire/EMS | Regional variations apply |
-| Public Safety UHF | 450.0 - 470.0 MHz | Police/Fire/EMS | Regional variations apply |
-| Public Safety 700MHz | 763.0 - 775.0 MHz | Public Safety Broadband | Regional variations apply |
-| Public Safety 800MHz | 806.0 - 824.0 MHz | Trunked radio systems | Regional variations apply |
-
-## Aviation
-
-Aviation frequencies used for air traffic control, aircraft communication, and navigation aids. These frequencies are regulated by the FAA in the United States and ICAO internationally.
+"""
+            readme_content += "| Service | Frequency Range | Primary Users | Notes |\n"
+            readme_content += "|---------|----------------|---------------|-------|\n"
+            for entry in entries:
+                if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} MHz"
+                else:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} - {entry['Frequency_End_MHz']:.1f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | {entry['Primary_Use']} | Regional variations apply |\n"
+        
+        elif service_type == 'Aviation':
+            readme_content += """Aviation frequencies used for air traffic control, aircraft communication, and navigation aids. These frequencies are regulated by the FAA in the United States and ICAO internationally.
 
 ### VHF Aviation Band
 The primary aviation communication band using AM (amplitude modulation) with 25 kHz channel spacing (8.33 kHz in some regions).
@@ -114,16 +165,18 @@ The primary aviation communication band using AM (amplitude modulation) with 25 
 ### Emergency Frequencies
 Critical frequencies for aviation emergencies and search and rescue operations.
 
-| Service | Frequency | Band | Purpose |
-|---------|-----------|------|----------|
-| Aviation VHF | 118 - 137 MHz | VHF/UHF | Air traffic control |
-| Aircraft Emergency | 121.5 MHz | VHF/UHF | Emergency locator beacons |
-| Aviation UHF | 225 - 400 MHz | VHF/UHF | Military aviation |
-| Aircraft Distress | 243.0 MHz | VHF/UHF | Military emergency frequency |
-
-## Marine
-
-Maritime mobile frequencies for ship-to-ship, ship-to-shore, and distress communication. Regulated by the FCC and coordinated internationally through the ITU.
+"""
+            readme_content += "| Service | Frequency | Band | Purpose |\n"
+            readme_content += "|---------|-----------|------|----------|\n"
+            for entry in entries:
+                if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} MHz"
+                else:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.0f} - {entry['Frequency_End_MHz']:.0f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | VHF/UHF | {entry['Primary_Use']} |\n"
+        
+        elif service_type == 'Marine':
+            readme_content += """Maritime mobile frequencies for ship-to-ship, ship-to-shore, and distress communication. Regulated by the FCC and coordinated internationally through the ITU.
 
 ### VHF Marine Band
 Primary marine communication using FM with 25 kHz channel spacing. Channel 16 (156.8 MHz) is the international distress and calling frequency.
@@ -131,29 +184,18 @@ Primary marine communication using FM with 25 kHz channel spacing. Channel 16 (1
 ### HF Marine Bands
 Long-range maritime communication for ocean-going vessels.
 
-| Service | Frequency Range | Band | Purpose |
-|---------|----------------|------|----------|
-| Marine MF | 2.0 - 4.0 MHz | Marine | Maritime HF |
-| Marine HF | 4.0 - 27.5 MHz | Marine | Long range maritime |
-| Marine VHF | 156.0 - 162.0 MHz | Marine | Maritime mobile |
-| Marine Emergency | 156.8 MHz | Marine | International distress/calling |
-
-## Citizens Band
-
-| Service | Frequency Range | Purpose |
-|---------|----------------|----------|
-| CB Radio | 27.0 - 27.4 MHz | Citizens Band radio |
-
-## Personal Radio
-
-| Service | Frequency Range | Purpose |
-|---------|----------------|----------|
-| MURS | 151.8 - 154.6 MHz | Multi-Use Radio Service |
-| FRS/GMRS | 462.6 - 467.7 MHz | Family Radio Service/GMRS |
-
-## WiFi
-
-Wi-Fi frequencies based on IEEE 802.11 standards. These operate in unlicensed ISM bands with specific power and bandwidth limitations.
+"""
+            readme_content += "| Service | Frequency Range | Band | Purpose |\n"
+            readme_content += "|---------|----------------|------|----------|\n"
+            for entry in entries:
+                if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} MHz"
+                else:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} - {entry['Frequency_End_MHz']:.1f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | Marine | {entry['Primary_Use']} |\n"
+        
+        elif service_type == 'WiFi':
+            readme_content += """Wi-Fi frequencies based on IEEE 802.11 standards. These operate in unlicensed ISM bands with specific power and bandwidth limitations.
 
 ### 2.4 GHz Band (802.11b/g/n/ax)
 Most widely used Wi-Fi band, shared with other ISM devices like microwave ovens and Bluetooth.
@@ -164,24 +206,15 @@ Less congested band offering higher data rates and more channels.
 ### 6 GHz Band (Wi-Fi 6E)
 Newest allocation providing additional spectrum for high-capacity applications.
 
-| Band | Frequency Range | Standard | Typical Use |
-|------|----------------|----------|-------------|
-| WiFi 2.4GHz | 2400 - 2485 MHz | 802.11b/g/n/ax | Wireless networking |
-| WiFi 5GHz | 5150 - 5850 MHz | 802.11a/n/ac/ax | Wireless networking |
-| WiFi 6GHz | 5925 - 7125 MHz | 802.11ax (WiFi 6E) | Wireless networking |
-
-## ISM
-
-| Service | Frequency Range | Purpose |
-|---------|----------------|----------|
-| ISM 13.56MHz | 13.6 - 13.6 MHz | Industrial/Medical/RFID |
-| ISM 27MHz | 27.0 - 27.3 MHz | Industrial/Medical/CB |
-| ISM 40MHz | 40.7 - 40.7 MHz | Industrial/Medical |
-| ISM 915MHz | 902.0 - 928.0 MHz | Industrial/Medical/IoT |
-
-## Cellular
-
-Cellular telephone frequencies including 2G, 3G, 4G LTE, and 5G bands. Band designations follow 3GPP specifications and vary by carrier and region.
+"""
+            readme_content += "| Band | Frequency Range | Standard | Typical Use |\n"
+            readme_content += "|------|----------------|----------|-------------|\n"
+            for entry in entries:
+                freq_range = f"{entry['Frequency_Start_MHz']:.0f} - {entry['Frequency_End_MHz']:.0f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | {entry['Primary_Use']} | Wireless networking |\n"
+        
+        elif service_type == 'Cellular':
+            readme_content += """Cellular telephone frequencies including 2G, 3G, 4G LTE, and 5G bands. Band designations follow 3GPP specifications and vary by carrier and region.
 
 ### LTE Band Classifications
 - **Low Band** (< 1 GHz): Wide coverage, good building penetration
@@ -191,22 +224,18 @@ Cellular telephone frequencies including 2G, 3G, 4G LTE, and 5G bands. Band desi
 ### 5G Deployment
 5G uses both existing LTE bands (NSA mode) and new millimeter wave spectrum (mmWave).
 
-| Band | Frequency Range | Technology | Primary Carriers |
-|------|----------------|------------|------------------|
-| 5G n71 | 617 - 698 MHz | 5G Sub-6 | Major carriers |
-| LTE Band 12 | 699 - 746 MHz | 700MHz Lower | Major carriers |
-| LTE Band 13 | 746 - 787 MHz | 700MHz Upper | Major carriers |
-| Cellular 850MHz | 824 - 894 MHz | GSM/LTE Band 5 | Major carriers |
-| Cellular 900MHz | 880 - 960 MHz | GSM 900 | Major carriers |
-| Cellular 1800MHz | 1710 - 1880 MHz | GSM 1800/LTE Band 3 | Major carriers |
-| LTE Band 4 | 1710 - 2155 MHz | AWS-1 | Major carriers |
-| Cellular 1900MHz | 1850 - 1990 MHz | PCS/LTE Band 2 | Major carriers |
-| 5G n78 | 3300 - 3800 MHz | 5G Sub-6 | Major carriers |
-| 5G mmWave | 24250 - 40000 MHz | 5G mmWave bands | Major carriers |
-
-## GPS
-
-Global Navigation Satellite System (GNSS) frequencies including GPS, GLONASS, Galileo, and other satellite navigation systems.
+"""
+            readme_content += "| Band | Frequency Range | Technology | Primary Carriers |\n"
+            readme_content += "|------|----------------|------------|------------------|\n"
+            for entry in entries:
+                if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} MHz"
+                else:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.0f} - {entry['Frequency_End_MHz']:.0f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | {entry['Primary_Use']} | Major carriers |\n"
+        
+        elif service_type == 'GPS':
+            readme_content += """Global Navigation Satellite System (GNSS) frequencies including GPS, GLONASS, Galileo, and other satellite navigation systems.
 
 ### GPS Signal Structure
 - **L1 C/A**: Civilian coarse acquisition code (public)
@@ -216,31 +245,15 @@ Global Navigation Satellite System (GNSS) frequencies including GPS, GLONASS, Ga
 ### Other GNSS Systems
 Modern receivers typically support multiple satellite constellations for improved accuracy and availability.
 
-| System | Frequency (MHz) | Signal | Purpose |
-|--------|----------------|--------|----------|
-| GPS L5 | 1176.45 | Navigation | GPS safety-of-life |
-| GPS L2 | 1227.60 | Navigation | GPS P(Y) code |
-| GPS L1 | 1575.42 | Navigation | GPS C/A code |
-| Galileo E1 | 1575.42 | Navigation | Galileo Open Service |
-| GLONASS G1 | 1598.06 | Navigation | GLONASS L1 |
-
-## Satellite
-
-| Service | Frequency Range | Purpose |
-|---------|----------------|----------|
-| VHF Satellite | 137.0 - 138.0 MHz | Weather satellites |
-| UHF Satellite | 400.1 - 401.0 MHz | Meteorological aids |
-| L-Band | 1000.0 - 2000.0 MHz | GPS mobile satellite |
-| S-Band | 2000.0 - 4000.0 MHz | Weather radar satellite |
-| C-Band | 4000.0 - 8000.0 MHz | Satellite communication |
-| X-Band | 8000.0 - 12000.0 MHz | Radar satellite |
-| Ku-Band | 12000.0 - 18000.0 MHz | Satellite TV/Internet |
-| K-Band | 18000.0 - 27000.0 MHz | Satellite radar |
-| Ka-Band | 27000.0 - 40000.0 MHz | High-capacity satellite |
-
-## Time Standard
-
-Time and frequency standard stations providing precise time signals for synchronization and calibration purposes.
+"""
+            readme_content += "| System | Frequency (MHz) | Signal | Purpose |\n"
+            readme_content += "|--------|----------------|--------|----------|\n"
+            for entry in entries:
+                freq_range = f"{entry['Frequency_Start_MHz']:.2f}"
+                readme_content += f"| {entry['Band']} | {freq_range} | Navigation | {entry['Primary_Use']} |\n"
+        
+        elif service_type == 'Time Standard':
+            readme_content += """Time and frequency standard stations providing precise time signals for synchronization and calibration purposes.
 
 ### WWV (Fort Collins, Colorado)
 Operated by NIST, provides continuous time signals with voice announcements and time codes.
@@ -251,35 +264,33 @@ Similar to WWV but with female voice announcements to distinguish from WWV.
 ### CHU (Ottawa, Canada)
 Operated by the National Research Council of Canada.
 
-| Station | Frequency (MHz) | Location | Operator |
-|---------|----------------|----------|----------|
-| WWV | 2.50 | Colorado | NIST |
-| WWVH | 2.50 | Hawaii | NIST |
-| CHU | 3.33 | Canada | NRC |
-| WWV | 5.00 | Colorado | NIST |
-| WWVH | 5.00 | Hawaii | NIST |
-| CHU | 7.85 | Canada | NRC |
-| WWV | 10.00 | Colorado | NIST |
-| WWVH | 10.00 | Hawaii | NIST |
-| CHU | 14.67 | Canada | NRC |
-| WWV | 15.00 | Colorado | NIST |
-| WWVH | 15.00 | Hawaii | NIST |
-| WWV | 20.00 | Colorado | NIST |
+"""
+            readme_content += "| Station | Frequency (MHz) | Location | Operator |\n"
+            readme_content += "|---------|----------------|----------|----------|\n"
+            for entry in entries:
+                freq_range = f"{entry['Frequency_Start_MHz']:.2f}"
+                station = entry['Band'].replace(' ', ' ').split()[0]
+                if 'WWV' in station:
+                    location = "Colorado" if station == "WWV" else "Hawaii"
+                    operator = "NIST"
+                else:
+                    location = "Canada"  
+                    operator = "NRC"
+                readme_content += f"| {station} | {freq_range} | {location} | {operator} |\n"
+        
+        else:
+            # Generic table for other service types
+            readme_content += "| Service | Frequency Range | Purpose |\n"
+            readme_content += "|---------|----------------|----------|\n"
+            for entry in entries:
+                if entry['Frequency_Start_MHz'] == entry['Frequency_End_MHz']:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.2f} MHz"
+                else:
+                    freq_range = f"{entry['Frequency_Start_MHz']:.1f} - {entry['Frequency_End_MHz']:.1f} MHz"
+                readme_content += f"| {entry['Band']} | {freq_range} | {entry['Primary_Use']} |\n"
 
-## Emergency
-
-| Service | Frequency Range | Purpose |
-|---------|----------------|----------|
-| ELT 121.5MHz | 121.50 MHz | Emergency locator transmitter |
-| EPIRB 406MHz | 406.0 - 406.1 MHz | Emergency position beacon |
-| International Distress | 500.00 MHz | 500 kHz International distress |
-
-## Personal Area Network
-
-| Service | Frequency Range | Purpose |
-|---------|----------------|----------|
-| Bluetooth | 2402.0 - 2480.0 MHz | Short-range wireless |
-
+    # Add remaining sections
+    readme_content += """
 ## Frequency Band Designations
 
 ### ITU Radio Frequency Bands
@@ -534,3 +545,19 @@ For new frequency allocations or missing services:
 **Last Updated**: December 2024  
 **Total Frequency Allocations**: 91 verified entries  
 **Coverage**: DC to 40+ GHz across all major services
+"""
+
+    return readme_content
+
+def main():
+    """Generate the comprehensive README."""
+    content = generate_comprehensive_readme()
+    
+    with open('README.md', 'w') as f:
+        f.write(content)
+    
+    print("Generated comprehensive README.md with complete frequency information")
+    print(f"README size: {len(content):,} characters")
+
+if __name__ == "__main__":
+    main()
